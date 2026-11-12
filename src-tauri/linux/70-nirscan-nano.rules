@@ -1,0 +1,3 @@
+# TI DLP NIRscan Nano (USB HID 0451:4200) - allow access for logged-in users
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0451", ATTRS{idProduct}=="4200", MODE="0666", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0451", ATTRS{idProduct}=="4200", MODE="0666", TAG+="uaccess"

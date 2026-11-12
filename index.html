@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NIRscan Nano</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">NIRscan Nano</div>
+      <div class="conn">
+        <span id="conn-dot" class="dot off"></span>
+        <span id="conn-text">Not connected</span>
+        <button id="btn-connect" class="btn small">Connect</button>
+      </div>
+      <div class="chips">
+        <span id="chip-scan" class="chip hidden">Scanning</span>
+        <span id="chip-sd" class="chip hidden">SD card</span>
+        <span id="chip-ble" class="chip warn hidden">Bluetooth active</span>
+        <span id="chip-batt" class="chip hidden"></span>
+        <button id="chip-err" class="chip err hidden" title="Click to clear device errors">Errors</button>
+      </div>
+    </header>
+    <div class="layout">
+      <nav class="sidebar">
+        <button class="nav active" data-view="scan">Scan</button>
+        <button class="nav" data-view="configs">Scan configurations</button>
+        <button class="nav" data-view="sensors">Sensors</button>
+        <button class="nav" data-view="device">Device</button>
+        <button class="nav" data-view="tests">Tests</button>
+      </nav>
+      <main>
+        <!-- ============================ SCAN ============================ -->
+        <section id="view-scan" class="view">
+          <div class="scan-grid">
+            <aside class="panel controls">
+              <h3>Scan</h3>
+              <label>Configuration
+                <select id="scan-config"></select>
+              </label>
+              <label>Scans to average
+                <input id="scan-repeats" type="number" min="1" max="65535" value="6" />
+              </label>
+              <div class="hint" id="scan-est">Estimated time: –</div>
+              <label>Scan name tag
+                <input id="scan-tag" type="text" maxlength="13" placeholder="optional" />
+              </label>
+              <label>PGA gain
+                <select id="scan-pga">
+                  <option value="auto">Auto</option>
+                  <option value="1">1</option><option value="2">2</option><option value="4">4</option>
+                  <option value="8">8</option><option value="16">16</option><option value="32">32</option>
+                  <option value="64">64</option>
+                </select>
+              </label>
+              <label>Lamp
+                <select id="scan-lamp">
+                  <option value="auto">Auto (on during scan)</option>
+                  <option value="on">Keep on</option>
+                </select>
+              </label>
+              <label class="check"><input id="scan-sd" type="checkbox" /> Also store scan on SD card</label>
+              <label>Reference
+                <select id="scan-ref">
+                  <option value="builtin">Built-in (factory)</option>
+                  <option value="local">Local reference scan</option>
+                  <option value="none">None (intensity only)</option>
+                </select>
+              </label>
+              <div class="hint" id="local-ref-info"></div>
+              <button id="btn-scan" class="btn primary big" disabled>Scan</button>
+              <div class="progress hidden" id="scan-progress"><div class="bar" id="scan-bar"></div></div>
+              <div class="hint" id="scan-status"></div>
+              <div class="row">
+                <button id="btn-save" class="btn" disabled>Save CSV…</button>
+                <button id="btn-open" class="btn">Open scan…</button>
+              </div>
+              <div class="row">
+                <button id="btn-setref" class="btn" disabled title="Use the current scan as the local reference">Use as reference</button>
+                <button id="btn-pickref" class="btn" title="Load a saved .dat scan as the local reference">Load reference…</button>
+              </div>
+            </aside>
+            <div class="panel plot-panel">
+              <div class="plot-toolbar">
+                <div class="seg" id="plot-type">
+                  <button data-t="absorbance" class="active">Absorbance</button>
+                  <button data-t="reflectance">Reflectance</button>
+                  <button data-t="intensity">Intensity</button>
+                  <button data-t="reference">Reference</button>
+                </div>
+                <label class="check"><input id="plot-overlay" type="checkbox" /> Keep previous scans</label>
+                <button id="btn-clear-plot" class="btn small">Clear</button>
+              </div>
+              <div id="plot" class="plot"></div>
+              <div id="plot-msg" class="plot-msg">No scan yet. Connect the NIRscan Nano and press Scan.</div>
+              <div id="scan-meta" class="meta"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================ CONFIGS ============================ -->
+        <section id="view-configs" class="view hidden">
+          <div class="cfg-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Stored on device</h3>
+                <button id="btn-cfg-reload" class="btn small">Reload</button>
+              </div>
+              <table class="list" id="cfg-list"></table>
+              <div class="row">
+                <button id="btn-cfg-new" class="btn">New</button>
+                <button id="btn-cfg-dup" class="btn">Duplicate</button>
+                <button id="btn-cfg-del" class="btn danger">Delete</button>
+                <button id="btn-cfg-active" class="btn">Set active</button>
+              </div>
+              <div class="row">
+                <button id="btn-cfg-save" class="btn primary">Write list to device</button>
+              </div>
+              <div class="hint" id="cfg-dirty"></div>
+            </div>
+            <div class="panel">
+              <h3>Edit configuration</h3>
+              <div id="cfg-editor" class="hint">Select a configuration.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================ SENSORS ============================ -->
+        <section id="view-sensors" class="view hidden">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Board sensors</h3>
+              <div class="row" style="margin:0;align-items:center">
+                <label class="check" style="margin:0"><input id="sens-auto" type="checkbox" /> Auto refresh (2 s)</label>
+                <button id="btn-read-sensors" class="btn primary">Read Sensors</button>
+              </div>
+            </div>
+            <div class="tiles" id="sens-tiles"></div>
+            <div class="hint" id="sens-updated"></div>
+            <div class="errors" id="sens-errors"></div>
+          </div>
+        </section>
+
+        <!-- ============================ DEVICE ============================ -->
+        <section id="view-device" class="view hidden">
+          <div class="dev-grid">
+            <div class="panel">
+              <h3>Information</h3>
+              <table class="kv" id="dev-info"></table>
+            </div>
+            <div class="panel">
+              <h3>Utilities</h3>
+              <div class="row"><button id="btn-clock" class="btn">Sync device clock to this Mac</button></div>
+              <div class="row">
+                <label class="check"><input id="dev-hibernate" type="checkbox" /> Hibernate when idle</label>
+              </div>
+              <div class="row">
+                <button id="btn-lamp-on" class="btn">Lamp on</button>
+                <button id="btn-lamp-auto" class="btn">Lamp auto</button>
+              </div>
+              <h4>SD card</h4>
+              <div class="row">
+                <button id="btn-sd-read" class="btn">Open last stored scan</button>
+                <button id="btn-sd-del" class="btn danger">Delete last stored scan</button>
+              </div>
+              <h4>Maintenance</h4>
+              <div class="row"><button id="btn-reset" class="btn danger">Reset device</button></div>
+              <div class="hint" id="dev-msg"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================ TESTS ============================ -->
+        <section id="view-tests" class="view hidden">
+          <div class="panel">
+            <h3>Board tests</h3>
+            <p class="hint">Self tests run on the Tiva firmware. Some take several seconds.</p>
+            <div class="test-buttons">
+              <button class="btn" data-test="eeprom">EEPROM</button>
+              <button class="btn" data-test="adc">ADC</button>
+              <button class="btn" data-test="tmp">TMP006 temp</button>
+              <button class="btn" data-test="hdc">HDC1000 humidity</button>
+              <button class="btn" data-test="sdram">SDRAM</button>
+              <button class="btn" data-test="sdcard">SD card</button>
+              <button class="btn" data-test="bq">Battery charger</button>
+              <button class="btn" data-test="led_on">LED test on</button>
+              <button class="btn" data-test="led_off">LED test off</button>
+              <button class="btn" data-test="button_start">Button test start</button>
+              <button class="btn" data-test="button_read">Button read</button>
+              <button class="btn" data-test="button_stop">Button test stop</button>
+            </div>
+            <pre id="test-log" class="log"></pre>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

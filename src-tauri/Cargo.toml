@@ -1,0 +1,33 @@
+[package]
+name = "nirscan-nano"
+version = "0.1.0"
+description = "macOS host app for the TI DLP NIRscan Nano (USB HID)"
+edition = "2021"
+
+[lib]
+name = "nirscan_nano_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "nirscan-nano"
+path = "src/main.rs"
+
+[[bin]]
+name = "nano-cli"
+path = "src/bin/nano_cli.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hidapi = "2.6"
+thiserror = "2"
+chrono = "0.4"
+dirs = "6"
+
+[profile.release]
+opt-level = 3
